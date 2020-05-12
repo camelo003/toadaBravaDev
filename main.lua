@@ -1,4 +1,6 @@
-dofile("func/mapLoaderFunc.lua") 
+-- =]
+
+dofile("func/mapLoaderFunc.lua")
 dofile("func/eventsFunc.lua")
 dofile("func/tempChar.lua")
 
