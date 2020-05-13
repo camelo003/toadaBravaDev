@@ -1,6 +1,9 @@
+# para o master branch incluir 'char/', 'map/', 'tileset/'
+# para o branch noContentBranch NAO incluir 'char/', 'map/', 'tileset/'
+
 .DS_Store
 .vscode
 todo.txt
 char/
 map/
-tileset/
+tileset/    

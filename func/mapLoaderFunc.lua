@@ -2,16 +2,16 @@
     
 Varre um mapa tiled exportado e retorna: 
 
-- [x] a) Um array (canvas Canvas) preenchido com os seguintes Canvas:
+a) Um array (canvas Canvas) preenchido com os seguintes Canvas:
 
     1. under layer
     2. back layer
     3. front layer
     4. above layer
 
-- [x] b) Um array (walkShapes) com as shapes "caminháveis"
-- [ ] c) Um array com os shapes de caminhos bloqueados
-- [ ] d) Um array de "eventos"
+b) Um array (walkShapes) com as shapes "caminháveis"
+c) Um array com os shapes de caminhos bloqueados
+d) Um array de "eventos"
 
 ##############################################]]--
 

@@ -1,12 +1,19 @@
 dofile("func/mapLoaderFunc.lua")
+dofile("func/animLoaderFunc.lua")
 dofile("func/eventsFunc.lua")
 dofile("func/tempChar.lua")
 
 dofile("lib/collisions.lua") -- https://love2d.org/wiki/PointWithinShape
 flux = dofile("lib/flux.lua") -- https://github.com/rxi/flux
 
-
 -- T E M P   S T U F F --
+
+do
+    an = animLoader("char/brasilino.lua")
+    tempClock = 0
+    fpsControl = 1/8
+    tempTimer = fpsControl  
+end
 
 do
     mode = "map" -- init, map, game menu
@@ -15,6 +22,8 @@ do
 end
 
 -- S O M E   G L O B A L S --
+
+debugation = {}
 
 workingCanvas = 0 -- canvas onde o jogo e desenhado
 
@@ -77,6 +86,12 @@ function love.update(dt)
     if activeEvent and not isSomeEventHappening then
         enventHandler(activeEvent)
     end
+
+    tempTimer = tempTimer - dt
+    if tempTimer < 0 then
+        tempTimer = tempTimer + fpsControl
+        tempClock = tempClock + 1
+    end
 end
 
 -- D R A W ! --
@@ -89,6 +104,7 @@ function love.draw()
     elseif mode == "game menu" then
         gameMenuModeDraw()
     end
+    love.graphics.print("D E B U G A T I O N S :" .. '\n' .. #debugation)
 end
 
 -- D E B U G ? --
@@ -144,19 +160,26 @@ function mapModeDraw(workingMapTable)
 
     love.graphics.draw(a[1],xOffset,yOffset,0,1,1,1,1,0,0)
     love.graphics.draw(a[2],xOffset,yOffset,0,1,1,1,1,0,0)
+    animPlayer({pos = {x = tempChar.x + xOffset, y = tempChar.y + yOffset}, animToPlay = "walkDown"},an,{actualFrame = tempClock})
     tempChar.draw(xOffset, yOffset)
     love.graphics.draw(a[3],xOffset,yOffset,0,1,1,1,1,0,0)
     love.graphics.draw(a[4],xOffset,yOffset,0,1,1,1,1,0,0)
 
+    love.graphics.setColor(0,255,0)
     for i=1, #b do
         love.graphics.rectangle("line", b[i][1].x + xOffset, b[i][1].y + yOffset, b[i][2].x - b[i][1].x, b[i][2].y - b[i][1].y)
     end
+    love.graphics.setColor(255,255,255)
 
+    love.graphics.setColor(255,0,0)
     for i=1, #c do
         love.graphics.rectangle("line", c[i][1].x + xOffset, c[i][1].y + yOffset, c[i][2].x - c[i][1].x, c[i][2].y - c[i][1].y)
     end
+    love.graphics.setColor(255,255,255)
 
+    love.graphics.setColor(0,0,255)
     drawEvents(d, xOffset, yOffset)
+    love.graphics.setColor(255,255,255)
 
     if workingFader.isActive then
         workingFader:draw()
