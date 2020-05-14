@@ -1,5 +1,5 @@
 dofile("func/mapLoaderFunc.lua")
-dofile("func/animLoaderFunc.lua")
+dofile("func/charLoaderFunc.lua")
 dofile("func/eventsFunc.lua")
 dofile("func/tempChar.lua")
 
@@ -9,7 +9,7 @@ flux = dofile("lib/flux.lua") -- https://github.com/rxi/flux
 -- T E M P   S T U F F --
 
 do
-    an = animLoader("char/brasilino.lua")
+    an = charLoader("char/brasilino.lua")
     tempClock = 0
     fpsControl = 1/8
     tempTimer = fpsControl  
@@ -75,10 +75,10 @@ function love.update(dt)
     updateModeLabel()
 
     tempChar.update(dt, b, c)
-    local tempCharPlace = { {x = tempChar.x, y = tempChar.y},
-                            {x = tempChar.x + tempChar.w, y = tempChar.y},
-                            {x = tempChar.x + tempChar.w, y = tempChar.y + tempChar.h},
-                            {x = tempChar.x, y = tempChar.y + tempChar.h}
+    local tempCharPlace = { {x = tempChar.x - (tempChar.w / 2), y = tempChar.y - (tempChar.h / 2)},
+                            {x = tempChar.x - (tempChar.w / 2) + tempChar.w, y = tempChar.y - (tempChar.h / 2)},
+                            {x = tempChar.x - (tempChar.w / 2) + tempChar.w, y = tempChar.y - (tempChar.h / 2) + tempChar.h},
+                            {x = tempChar.x - (tempChar.w / 2), y = tempChar.y - (tempChar.h / 2) + tempChar.h}
                           }
 
        
@@ -160,8 +160,8 @@ function mapModeDraw(workingMapTable)
 
     love.graphics.draw(a[1],xOffset,yOffset,0,1,1,1,1,0,0)
     love.graphics.draw(a[2],xOffset,yOffset,0,1,1,1,1,0,0)
-    animPlayer({pos = {x = tempChar.x + xOffset, y = tempChar.y + yOffset}, animToPlay = "walkDown"},an,{actualFrame = tempClock})
-    tempChar.draw(xOffset, yOffset)
+    charPlayer({pos = {x = tempChar.x + xOffset, y = tempChar.y + yOffset}, animToPlay = "walkRight"},an,{actualFrame = tempClock})
+    tempChar.drawCollision(xOffset, yOffset)
     love.graphics.draw(a[3],xOffset,yOffset,0,1,1,1,1,0,0)
     love.graphics.draw(a[4],xOffset,yOffset,0,1,1,1,1,0,0)
 
