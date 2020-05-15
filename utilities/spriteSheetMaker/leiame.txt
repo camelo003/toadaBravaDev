@@ -1,0 +1,61 @@
+Rode o programinha para fazer um spritesheet contendo todos os frames da animação da pasta!
+
+ _____ __  __ _____   ____  _____ _______       _   _ _______ ______ _
+|_   _|  \/  |  __ \ / __ \|  __ \__   __|/\   | \ | |__   __|  ____| |
+  | | | \  / | |__) | |  | | |__) | | |  /  \  |  \| |  | |  | |__  | |
+  | | | |\/| |  ___/| |  | |  _  /  | | / /\ \ | . ` |  | |  |  __| | |
+ _| |_| |  | | |    | |__| | | \ \  | |/ ____ \| |\  |  | |  | |____|_|
+|_____|_|  |_|_|     \____/|_|  \_\ |_/_/    \_\_| \_|  |_|  |______(_)
+
+1. Os arquivos dos frames devem ser do formato *png
+
+2. Todos os arquivos devem ter a mesma altura e largura
+
+3. Os arquivos devem estar nomeados da seguinte forma:
+
+  nomeDaAnimacao_XX.png
+
+onde 'nomeDaAnimacao' é um nome qualquer que deve ser o memso entre os frames e 'XX' é o frame da animação. Um exemplo possível:
+
+  walkLeft_01.png
+  walkLeft_02.png
+  walkLeft_03.png
+  walkRight_01.png
+  walkRight_02.png
+  walkRight_03.png
+
+4. Dica de ouro: para forçar o programinha a desenhar na ordem desejada, nomeie os arquivos de forma que a ordem alfabética seja a ordem que você espera. Exemplo:
+
+  1walkUp_01.png
+  1walkUp_02.png
+  1walkUp_03.png
+  2walkRight_01.png
+  2walkRight_02.png
+  2walkRight_03.png
+  3walkDown_01.png
+  3walkDown_02.png
+  3walkDown_03.png
+  4walkLeft_01.png
+  4walkLeft_02.png
+  4walkLeft_03.png
+
+assim o spritesheet vai desenhar as respectivas animações nessa ordem.
+MAS NÃO UTILIZAR MAIS DE UM SÍMBOLO '_' NO NOME DO ARQUIVO.
+
+5. Não esquece de alterar as propriedades do atalho RUN o campo 'Destino:' deve conter
+
+  "caminho\até\love-11.3-win64\love.exe" "caminho\até\toadaBravaDev\utilities\spriteSheetMaker"
+
+e o campo "Iniciar em:"
+
+"caminho\até\toadaBravaDev\utilities\spriteSheetMaker"
+
+Qualquer coisa dá um toque =] !
+
+       .-"-.
+     _/.-.-.\_
+    ( ( o o ) )
+     |/  "  \|
+      \'---'/   < Eita!
+      /`"""`\
+     /       \

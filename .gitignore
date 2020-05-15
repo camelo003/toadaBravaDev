@@ -6,4 +6,5 @@
 todo.txt
 char/
 map/
-tileset/    
+tileset/
+utilities/spriteSheetMaker/*.png
