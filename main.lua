@@ -2,6 +2,7 @@ dofile("func/mapLoaderFunc.lua")
 dofile("func/charLoaderFunc.lua")
 dofile("func/eventsFunc.lua")
 dofile("func/tempChar.lua")
+dofile("func/inputsFunc.lua")
 
 dofile("lib/collisions.lua") -- https://love2d.org/wiki/PointWithinShape
 flux = dofile("lib/flux.lua") -- https://github.com/rxi/flux
@@ -9,7 +10,7 @@ flux = dofile("lib/flux.lua") -- https://github.com/rxi/flux
 -- T E M P   S T U F F --
 
 do
-    an = charLoader("char/brasilino.lua")
+    -- an = charLoader("char/brasilino.lua")
     tempClock = 0
     fpsControl = 1/8
     tempTimer = fpsControl  
@@ -46,6 +47,14 @@ function love.load()
     tempChar.x = init.charPos.x
     tempChar.y = init.charPos.y
 
+    playerEntity.pos.x = init.charPos.x
+    playerEntity.pos.y = init.charPos.y
+
+    playerEntity.activeChar = charLoader("char/brasilino.lua")
+
+    playerEntity.bouningBox.w = playerEntity.activeChar.collisionRects[1].width
+    playerEntity.bouningBox.h = playerEntity.activeChar.collisionRects[1].height
+
     -- get map a) drawings layers, b) walkeable spaces, c) blocked spaces, d) touchEvents, e) checkEvents (por enquanto)
     local a, b, c, d, e = mapLoader("map/" .. init.firstMap .. ".lua")
     workingMap[1].drawings = a
@@ -69,12 +78,14 @@ end
 
 function love.update(dt)
     flux.update(dt)
+    updateInput()
 
     workingCamera:update({x = tempChar.x, y = tempChar.y})
 
     updateModeLabel()
 
-    tempChar.update(dt, b, c)
+    playerEntity.update(dt,workingMap[1])
+    --tempChar.update(dt, b, c)
     local tempCharPlace = { {x = tempChar.x - (tempChar.w / 2), y = tempChar.y - (tempChar.h / 2)},
                             {x = tempChar.x - (tempChar.w / 2) + tempChar.w, y = tempChar.y - (tempChar.h / 2)},
                             {x = tempChar.x - (tempChar.w / 2) + tempChar.w, y = tempChar.y - (tempChar.h / 2) + tempChar.h},
@@ -158,36 +169,45 @@ function mapModeDraw(workingMapTable)
 
     love.graphics.print("Modo map!", modeLabelX,modeLabelY)
 
-    love.graphics.draw(a[1],xOffset,yOffset,0,1,1,1,1,0,0)
-    love.graphics.draw(a[2],xOffset,yOffset,0,1,1,1,1,0,0)
-    charPlayer({pos = {x = tempChar.x + xOffset, y = tempChar.y + yOffset}, animToPlay = "walkRight"},an,{actualFrame = tempClock})
-    tempChar.drawCollision(xOffset, yOffset)
-    love.graphics.draw(a[3],xOffset,yOffset,0,1,1,1,1,0,0)
-    love.graphics.draw(a[4],xOffset,yOffset,0,1,1,1,1,0,0)
+    love.graphics.draw(a[1],0,0,0,1,1,1,1,0,0)
+    love.graphics.draw(a[2],0,0,0,1,1,1,1,0,0)
+    -- charPlayer({pos = {x = tempChar.x + xOffset, y = tempChar.y + yOffset}, animToPlay = "walkRight"},an,{actualFrame = tempClock})
+    playerEntity.draw(0, 0)
+    -- tempChar.drawCollision(xOffset, yOffset)
+    love.graphics.draw(a[3],0,0,0,1,1,1,1,0,0)
+    love.graphics.draw(a[4],0,0,0,1,1,1,1,0,0)
 
-    love.graphics.setColor(0,255,0)
     for i=1, #b do
-        love.graphics.rectangle("line", b[i][1].x + xOffset, b[i][1].y + yOffset, b[i][2].x - b[i][1].x, b[i][2].y - b[i][1].y)
+        if b[i].active then
+            love.graphics.setColor(0,255,0,0.25)
+            love.graphics.rectangle("fill", b[i][1].x, b[i][1].y, b[i][2].x - b[i][1].x, b[i][2].y - b[i][1].y)
+        end
+        love.graphics.setColor(0,255,0,1)
+        love.graphics.rectangle("line", b[i][1].x, b[i][1].y, b[i][2].x - b[i][1].x, b[i][2].y - b[i][1].y)
     end
-    love.graphics.setColor(255,255,255)
+    love.graphics.setColor(255,255,255,1)
 
-    love.graphics.setColor(255,0,0)
     for i=1, #c do
-        love.graphics.rectangle("line", c[i][1].x + xOffset, c[i][1].y + yOffset, c[i][2].x - c[i][1].x, c[i][2].y - c[i][1].y)
+        if c[i].active then
+            love.graphics.setColor(255,0,0,0.25)
+            love.graphics.rectangle("fill", c[i][1].x, c[i][1].y, c[i][2].x - c[i][1].x, c[i][2].y - c[i][1].y)
+        end
+        love.graphics.setColor(255,0,0,1)
+        love.graphics.rectangle("line", c[i][1].x, c[i][1].y, c[i][2].x - c[i][1].x, c[i][2].y - c[i][1].y)
     end
-    love.graphics.setColor(255,255,255)
+    love.graphics.setColor(255,255,255,1)
 
-    love.graphics.setColor(0,0,255)
-    drawEvents(d, xOffset, yOffset)
-    love.graphics.setColor(255,255,255)
+    love.graphics.setColor(0,0,255,1)
+    drawEvents(d, 0, 0)
+    love.graphics.setColor(255,255,255,1)
 
     if workingFader.isActive then
         workingFader:draw()
     end
 
     love.graphics.setCanvas()
-    love.graphics.draw(workingCanvas,0,0,0,1,1,1,0,0)
-
+    love.graphics.draw(workingCanvas,xOffset,yOffset,0,1,1,1,0,0)
+    drawInput(150,5)
 end
 
 function gameMenuModeDraw()

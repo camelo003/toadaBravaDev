@@ -71,13 +71,11 @@ charLoader = function(tiledChar)
     for i = 1, #tiledAnim.layers do
         if tiledAnim.layers[i].name == "COLLISION" then
             for j = 1, #tiledAnim.layers[i].objects do
-                local tempRect = {x = tiledAnim.layers[i].objects[j].x,
-                                  y = tiledAnim.layers[i].objects[j].y,
-                                  width = tiledAnim.layers[i].objects[j].width,
-                                  height = tiledAnim.layers[i].objects[j].height}
-
-                
-                
+                local tempRect = { x = tiledAnim.layers[i].objects[j].x,
+                                   y = tiledAnim.layers[i].objects[j].y,
+                                   width = tiledAnim.layers[i].objects[j].width,
+                                   height = tiledAnim.layers[i].objects[j].height
+                                }
                 local f = load("return " .. tiledAnim.layers[i].objects[j].properties.collisionRows)
                 local rows = f()
                 for k = 1, #rows do

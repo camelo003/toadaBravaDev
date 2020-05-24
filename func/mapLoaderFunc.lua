@@ -118,6 +118,7 @@ extractShapes = function(layers,catcher)
                 table.insert(tempBox,{x = tempX, y = tempY})
                 table.insert(tempBox,{x = tempX + tempW, y = tempY + tempH})
                 
+                tempBox.active = true
 
                 table.insert(tableToReturn,tempBox)
             end
