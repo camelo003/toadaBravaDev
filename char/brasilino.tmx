@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.4" orientation="orthogonal" renderorder="left-up" width="3" height="4" tilewidth="75" tileheight="70" infinite="0" nextlayerid="3" nextobjectid="2">
+ <tileset firstgid="1" name="brasilino" tilewidth="75" tileheight="70" tilecount="12" columns="3">
+  <image source="brasilino.png" width="225" height="280"/>
+ </tileset>
+ <layer id="1" name="ANIM" width="3" height="4">
+  <properties>
+   <property name="ANIM">return {
+  walkUp = {row = 1, order = {1,2,3,2}},
+  walkDown = {row = 2, order = {1,2,3,2}},
+  walkLeft = {row = 3, order = {1,2,3,2}},
+  walkRight = {row = 4, order = {1,2,3,2}},
+}</property>
+  </properties>
+  <data encoding="csv">
+1,2,3,
+4,5,6,
+7,8,9,
+10,11,12
+</data>
+ </layer>
+ <objectgroup id="2" name="COLLISION">
+  <object id="1" type="collision" x="11.25" y="52.25" width="49" height="19.5">
+   <properties>
+    <property name="collisionRows" value="{1,2,3,4}"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
