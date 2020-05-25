@@ -63,7 +63,7 @@ function enventHandler(event)
     local type = event.type
     if type == "teleport" then
         local nextMap = {}
-        local a, b, c, d, e = mapLoader("map/" .. event.properties.map .. ".lua")
+        local a, b, c, d, e, info = mapLoader("map/" .. event.properties.map .. ".lua")
         nextMap.drawings = a
         nextMap.walks = b
         nextMap.blocks = c
@@ -75,7 +75,7 @@ function enventHandler(event)
         destination.sendTo = {x = event.properties.sendToX, y = event.properties.sendToY}
         destination.facing = event.properties.facing
         
-        teleport(destination,nextMap)
+        teleport(destination,nextMap,info.wRes,info.hRes)
 
         -- PERFORM EVENT ACTIONS
 
@@ -108,11 +108,11 @@ function eventsLoader(map)
     return touchEvents, checkEvents
 end
 
-function drawEvents(eventArray,xOffset, yOffset)
+function drawEvents(eventArray)
     for i = 1, #eventArray do
-        love.graphics.rectangle("line", eventArray[i].x + xOffset, eventArray[i].y + yOffset, eventArray[i].width, eventArray[i].height)
+        love.graphics.rectangle("line", eventArray[i].x, eventArray[i].y, eventArray[i].width, eventArray[i].height)
         local s = eventArray[i].name .. "(" .. eventArray[i].type .. ")"
-        love.graphics.print(s, eventArray[i].x + xOffset, eventArray[i].y - 25 + yOffset)
+        love.graphics.print(s, eventArray[i].x, eventArray[i].y - 25)
     end
 end
 
@@ -141,13 +141,14 @@ end
 
 -- H E L P E R   F U N C T I O N S
 
-teleport = function(toWhere,map)
+teleport = function(toWhere,map,w,h)
     local function activateFader() workingFader.isActive = true end
     local function deactivateFader() workingFader.isActive = false; isSomeEventHappening = false end
     local function insertMap()
+        workingCanvas = love.graphics.newCanvas(w,h);
         table.insert(workingMap,1,map)
-        tempChar.x = toWhere.sendTo.x
-        tempChar.y = toWhere.sendTo.y
+        playerEntity.pos.x = toWhere.sendTo.x
+        playerEntity.pos.y = toWhere.sendTo.y
     end
 
     flux.to(workingFader, 0.2, {opacity = 1}):onstart(activateFader):oncomplete(insertMap):after(workingFader, 0.2, {opacity = 0}):oncomplete(deactivateFader)

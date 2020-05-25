@@ -95,7 +95,11 @@ function mapLoader(tiledMap)
 
     local touchEvents, checkEvents = eventsLoader(map)
 
-    return canvas, walkShapes, blockShapes, touchEvents, checkEvents
+    local info = {wRes = map.width * map.tilewidth,
+                  hRes = map.height * map.tileheight
+                }
+
+    return canvas, walkShapes, blockShapes, touchEvents, checkEvents, info
 
 end
 

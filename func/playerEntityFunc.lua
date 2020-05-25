@@ -1,105 +1,12 @@
-tempChar = {
-    x = 60,
-    y = 60,
-    w = 50,
-    h = 20,
-    velX = 100,
-    velY = 100,
-    drawCollision = function(offsetX,offsetY)
-        love.graphics.setColor(0,255,255)
-        love.graphics.rectangle("line",(tempChar.x-(tempChar.w/2))+offsetX,(tempChar.y-(tempChar.h/2)) + offsetY,tempChar.w,tempChar.h)
-        love.graphics.setColor(255,255,255)
-    end ,
-    update = function(dt, walkBoxes, blockBoxes) -- [to-do] OPTIMIZAR!!! usar lógica: input -> intencao -> checagens -> movimentação (ou não); Vai ficar bom!
-        local tempX = (tempChar.x-(tempChar.w/2))
-        local tempY = (tempChar.y-(tempChar.h/2))
-
-        if love.keyboard.isDown('w') then
-            for i=1, #walkBoxes do
-                local topLeftCorner = BoundingBox(walkBoxes[i], tempX, tempY - (tempChar.velY * dt))
-                if topLeftCorner and BoundingBox(walkBoxes[i], tempX + tempChar.w, tempY -(tempChar.velY * dt)) then
-                    local blocked = false
-                    for j = 1, #blockBoxes do
-                        topLeftCorner = BoundingBox(blockBoxes[j], tempX, tempY - (tempChar.velY * dt))
-                        if topLeftCorner or BoundingBox(blockBoxes[j], tempX + tempChar.w, tempY -(tempChar.velY * dt)) then
-                            blocked = true
-                            break
-                        end
-                    end
-                    if not blocked then
-                        tempChar.y = tempChar.y - (tempChar.velY * dt)
-                        break
-                    end
-                end
-            end
-
-        elseif love.keyboard.isDown('s') then
-            for i=1, #walkBoxes do
-                local bottomLeftCorner = BoundingBox(walkBoxes[i], tempX, tempY + tempChar.h + (tempChar.velY * dt))
-                if bottomLeftCorner and BoundingBox(walkBoxes[i], tempX + tempChar.w, tempY + tempChar.h + (tempChar.velY * dt)) then
-                    local blocked = false
-                    for j = 1, #blockBoxes do
-                        bottomLeftCorner = BoundingBox(blockBoxes[j], tempX, tempY + tempChar.h + (tempChar.velY * dt))
-                        if bottomLeftCorner or BoundingBox(blockBoxes[j], tempX + tempChar.w, tempY + tempChar.h + (tempChar.velY * dt)) then
-                            blocked = true
-                            break
-                        end
-                    end
-                    if not blocked then
-                        tempChar.y = tempChar.y + (tempChar.velY * dt)
-                        break
-                    end
-                end
-            end
-        end
-        if love.keyboard.isDown('d') then
-            for i=1, #walkBoxes do
-                local topRightCorner = BoundingBox(walkBoxes[i], tempX + tempChar.w + (tempChar.velX * dt), tempY)
-                if topRightCorner and BoundingBox(walkBoxes[i], tempX + tempChar.w + (tempChar.velX * dt), tempY + tempChar.h) then
-                    local blocked = false
-                    for j = 1, #blockBoxes do
-                        topRightCorner = BoundingBox(blockBoxes[j], tempX + tempChar.w + (tempChar.velX * dt), tempY)
-                        if topRightCorner or BoundingBox(blockBoxes[j], tempX + tempChar.w + (tempChar.velX * dt), tempY + tempChar.h) then
-                            blocked = true
-                            break
-                        end
-                    end
-                    if not blocked then
-                        tempChar.x = tempChar.x + (tempChar.velX * dt)
-                        break
-                    end
-                end
-            end
-        elseif love.keyboard.isDown('a') then
-            for i=1, #walkBoxes do
-                local topLeftCorner = BoundingBox(walkBoxes[i], tempX - (tempChar.velX * dt), tempY)
-                if topLeftCorner and BoundingBox(walkBoxes[i], tempX - (tempChar.velX * dt), tempY + tempChar.h) then
-                    local blocked = false
-                    for j = 1, #blockBoxes do
-                        topLeftCorner = BoundingBox(blockBoxes[j], tempX - (tempChar.velX * dt), tempY)
-                        if topLeftCorner or BoundingBox(blockBoxes[j], tempX - (tempChar.velX * dt), tempY + tempChar.h) then
-                            blocked = true
-                            break
-                        end
-                    end
-                    if not blocked then
-                        tempChar.x = tempChar.x - (tempChar.velX * dt)
-                        break
-                    end
-                end
-            end
-        end
-        -- get collision box!
-    end
-}
-
 playerEntity = {
     activeChar = {}, -- anim loaded table with charLoader() function of the char that the player are controlling
     pos = {x = 0, y = 0},
+    lastPos = {x = 0, y = 0},
     vel = 150,
     bouningBox = {w = 10, h = 5},
     corners = {{x = 0, y = 0},{x = 0, y = 0},{x = 0, y = 0},{x = 0, y = 0}},
-    facing = "",
+    facing = "left",
+    animToPlay = "walkRight",
     drawCollisionBox = true,
     isResponding = true,
 
@@ -108,23 +15,25 @@ playerEntity = {
 
     update = function(dt, activeMap)
         playerEntity.updateCorners()
-        playerEntity.solveWalk(dt, playerEntity.corners, activeMap)
+        playerEntity.solveFacingDirection()
+        playerEntity.solveAnimation()
+        playerEntity.solveWalk(dt, activeMap)
     end,
 
-    draw = function(offsetX,offsetY) -- draw the player's char!
-        -- charPlayer
+    draw = function() -- draw the player's char!
+        charPlayer(playerEntity,{actualFrame = tempClock})
         if playerEntity.drawCollisionBox then
-            playerEntity.drawCollision(offsetX,offsetY)
+            playerEntity.drawCollision()
         end
 
         if playerEntity.drawPerimeterBox then
-            playerEntity.drawPerimeter(offsetX,offsetY)
+            playerEntity.drawPerimeter()
         end
     end,
 
     -- P L A Y E R   E N T I T Y   H E L P E R   F U N C T I O N S !
 
-    solveWalk = function(dt, corners, activeMap)
+    solveWalk = function(dt, activeMap)
         local intention = {x = 0, y = 0} -- intencao de movimento a ser preenchido
 
         -- checa inputs
@@ -378,15 +287,91 @@ playerEntity = {
             end
         end
 
+        -- preenche ultima pos.
+        playerEntity.lastPos.x = playerEntity.pos.x
+        playerEntity.lastPos.y = playerEntity.pos.y
+
+        -- ANDA! (?)
         playerEntity.pos.x = playerEntity.pos.x + intention.x
         playerEntity.pos.y = playerEntity.pos.y + intention.y
 
     end,
 
+    justDirections = {"upBtn", "rightBtn", "downBtn", "leftBtn"},
+    lastPressed = {},
     solveFacingDirection = function()
 
+        -- Esquema pra definir a direcao que o personagem esta encarando:
+        -- Checa se a posicao atual esta contida no array 'lastPressed'
+        -- Se sim mantem a direcao atual, se nao assume a direcao que estiver
+        -- no [1] do array 'lastPressed' (acho que vai rolar :s )
+
+        for i, v in ipairs(playerEntity.justDirections) do
+            if inputs[v][1] then
+                local alreadyOnLastPressed = false
+                for j = 1, #playerEntity.lastPressed do
+                    if playerEntity.lastPressed[j] == v then
+                        alreadyOnLastPressed = true
+                        break
+                    end
+                end
+                if not alreadyOnLastPressed then
+                    table.insert(playerEntity.lastPressed,1,v)
+                end
+            end
+        end
+
+        if playerEntity.lastPressed[1] then
+            local isOnLastPressed = false
+            for i = 1, #playerEntity.lastPressed do
+                if string.gsub(playerEntity.lastPressed[i], "Btn", "") == playerEntity.facing then
+                    isOnLastPressed = true
+                    break
+                end
+            end
+            if not isOnLastPressed then
+                playerEntity.facing = string.gsub(playerEntity.lastPressed[1], "Btn", "")
+            end
+        end
+
+        --[[ print facing e lastPressed
+        print("facing: " .. playerEntity.facing)
+        local s = "lastPressed = {"
+        for i = 1, #playerEntity.lastPressed do
+            if playerEntity.lastPressed[i] then
+                s = s .. playerEntity.lastPressed[i]
+            end
+            if i ~= #playerEntity.lastPressed then
+                s = s .. ", "
+            end
+        end
+        print(s .. "}") ]]--
+
+        for i, v in ipairs(playerEntity.justDirections) do
+            if inputs[v][3] then
+                for j = 0, #playerEntity.lastPressed do
+                    if playerEntity.lastPressed[j] == playerEntity.justDirections[i] then
+                        table.remove(playerEntity.lastPressed,j)
+                        break
+                    end
+                end
+            end
+        end      
     end,
 
+    solveAnimation = function()
+        -- [FIXME] incrementar conforme tiver mais animacoes!
+        if playerEntity.facing == "up" then
+            playerEntity.animToPlay = "walkUp"
+        elseif playerEntity.facing == "right" then
+            playerEntity.animToPlay = "walkRight"
+        elseif playerEntity.facing == "down" then
+            playerEntity.animToPlay = "walkDown"
+        elseif playerEntity.facing == "left" then
+            playerEntity.animToPlay = "walkLeft"
+        end
+    end,
+    
     updateCorners = function()
         playerEntity.corners = {
                                 {x = playerEntity.pos.x - (playerEntity.bouningBox.w/2), y = playerEntity.pos.y - (playerEntity.bouningBox.h/2)},
@@ -396,22 +381,36 @@ playerEntity = {
                                }
     end,
 
-    drawCollision = function(offsetX,offsetY)
+    drawCollision = function()
         love.graphics.setColor(0,255,255)
         love.graphics.rectangle("line",
-                                playerEntity.corners[1].x + offsetX,
-                                playerEntity.corners[1].y + offsetY,
+                                playerEntity.corners[1].x,
+                                playerEntity.corners[1].y,
                                 playerEntity.bouningBox.w,
                                 playerEntity.bouningBox.h
                                )
+        if playerEntity.facing == "up" then
+            love.graphics.line(playerEntity.corners[4].x,playerEntity.corners[4].y,playerEntity.pos.x,playerEntity.corners[1].y)
+            love.graphics.line(playerEntity.corners[3].x,playerEntity.corners[3].y,playerEntity.pos.x,playerEntity.corners[1].y)
+        elseif playerEntity.facing == "right" then
+            love.graphics.line(playerEntity.corners[1].x,playerEntity.corners[1].y,playerEntity.corners[2].x,playerEntity.pos.y)
+            love.graphics.line(playerEntity.corners[4].x,playerEntity.corners[4].y,playerEntity.corners[2].x,playerEntity.pos.y)
+        elseif playerEntity.facing == "down" then
+            love.graphics.line(playerEntity.corners[1].x,playerEntity.corners[1].y,playerEntity.pos.x,playerEntity.corners[3].y)
+            love.graphics.line(playerEntity.corners[2].x,playerEntity.corners[2].y,playerEntity.pos.x,playerEntity.corners[3].y)
+        elseif playerEntity.facing == "left" then
+            love.graphics.line(playerEntity.corners[2].x,playerEntity.corners[2].y,playerEntity.corners[1].x,playerEntity.pos.y)
+            love.graphics.line(playerEntity.corners[3].x,playerEntity.corners[3].y,playerEntity.corners[1].x,playerEntity.pos.y)
+        end
+
         love.graphics.setColor(255,255,255)
     end,
 
-    drawPerimeter = function(offsetX,offsetY)
+    drawPerimeter = function()
         love.graphics.setColor(255,0,255)
         love.graphics.rectangle("line",
-                                playerEntity.pos.x - playerEntity.perimeter + offsetX,
-                                playerEntity.pos.y - playerEntity.perimeter + offsetY,
+                                playerEntity.pos.x - playerEntity.perimeter,
+                                playerEntity.pos.y - playerEntity.perimeter,
                                 playerEntity.perimeter * 2,
                                 playerEntity.perimeter * 2
                                )

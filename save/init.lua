@@ -6,7 +6,7 @@ Indica qual deve ser o primeiro mapa a ser carregado e exibido, personagem ativo
 
 local init = {
     firstMap = "mata_A2",
-    activeChar = "none",
+    activeChar = "brasilino",
     charPos = {x = 375, y = 350},
     charFacing = "down",
 }

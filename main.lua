@@ -1,7 +1,7 @@
 dofile("func/mapLoaderFunc.lua")
 dofile("func/charLoaderFunc.lua")
 dofile("func/eventsFunc.lua")
-dofile("func/tempChar.lua")
+dofile("func/playerEntityFunc.lua")
 dofile("func/inputsFunc.lua")
 
 dofile("lib/collisions.lua") -- https://love2d.org/wiki/PointWithinShape
@@ -37,35 +37,34 @@ workingMapMaxLength = 5
 function love.load()
     print("Olá mundo!")
 
-    local init
-    do
-        -- I N I T   C O I S A S ! --
-        local f = love.filesystem.load("save/init.lua")
-        init = f()
+    do -- FUNCAO init() (em breve)
+        local init
+        do
+            -- I N I T   C O I S A S ! --
+            local f = love.filesystem.load("save/init.lua")
+            init = f()
+        end
+
+        playerEntity.pos.x = init.charPos.x
+        playerEntity.pos.y = init.charPos.y
+
+        playerEntity.activeChar = charLoader("char/" .. init.activeChar .. ".lua")
+
+        playerEntity.bouningBox.w = playerEntity.activeChar.collisionRects[1].width
+        playerEntity.bouningBox.h = playerEntity.activeChar.collisionRects[1].height
+
+        -- get map a) drawings layers, b) walkeable spaces, c) blocked spaces, d) touchEvents, e) checkEvents (por enquanto)
+        local a, b, c, d, e, info = mapLoader("map/" .. init.firstMap .. ".lua")
+        workingMap[1].drawings = a
+        workingMap[1].walks = b
+        workingMap[1].blocks = c
+        workingMap[1].touches = d
+        workingMap[1].checks = e
+
+        workingFader = dofile("obj/fadeToBlackObj.lua")
+        workingCamera = dofile("obj/cameraObj.lua")
+        workingCanvas = love.graphics.newCanvas(info.wRes,info.hRes);
     end
-
-    tempChar.x = init.charPos.x
-    tempChar.y = init.charPos.y
-
-    playerEntity.pos.x = init.charPos.x
-    playerEntity.pos.y = init.charPos.y
-
-    playerEntity.activeChar = charLoader("char/brasilino.lua")
-
-    playerEntity.bouningBox.w = playerEntity.activeChar.collisionRects[1].width
-    playerEntity.bouningBox.h = playerEntity.activeChar.collisionRects[1].height
-
-    -- get map a) drawings layers, b) walkeable spaces, c) blocked spaces, d) touchEvents, e) checkEvents (por enquanto)
-    local a, b, c, d, e = mapLoader("map/" .. init.firstMap .. ".lua")
-    workingMap[1].drawings = a
-    workingMap[1].walks = b
-    workingMap[1].blocks = c
-    workingMap[1].touches = d
-    workingMap[1].checks = e
-
-    workingFader = dofile("obj/fadeToBlackObj.lua")
-    workingCamera = dofile("obj/cameraObj.lua")
-    workingCanvas = love.graphics.newCanvas();
 
     local function deactivateFader()
         workingFader.isActive = false
@@ -80,20 +79,13 @@ function love.update(dt)
     flux.update(dt)
     updateInput()
 
-    workingCamera:update({x = tempChar.x, y = tempChar.y})
+    workingCamera:update(playerEntity.pos)
 
     updateModeLabel()
 
     playerEntity.update(dt,workingMap[1])
-    --tempChar.update(dt, b, c)
-    local tempCharPlace = { {x = tempChar.x - (tempChar.w / 2), y = tempChar.y - (tempChar.h / 2)},
-                            {x = tempChar.x - (tempChar.w / 2) + tempChar.w, y = tempChar.y - (tempChar.h / 2)},
-                            {x = tempChar.x - (tempChar.w / 2) + tempChar.w, y = tempChar.y - (tempChar.h / 2) + tempChar.h},
-                            {x = tempChar.x - (tempChar.w / 2), y = tempChar.y - (tempChar.h / 2) + tempChar.h}
-                          }
 
-       
-    local activeEvent = checkTouchEvents(workingMap[1].touches,tempCharPlace)
+    local activeEvent = checkTouchEvents(workingMap[1].touches,playerEntity.corners)
     if activeEvent and not isSomeEventHappening then
         enventHandler(activeEvent)
     end
@@ -169,14 +161,10 @@ function mapModeDraw(workingMapTable)
 
     love.graphics.print("Modo map!", modeLabelX,modeLabelY)
 
-    love.graphics.draw(a[1],0,0,0,1,1,1,1,0,0)
-    love.graphics.draw(a[2],0,0,0,1,1,1,1,0,0)
-    -- charPlayer({pos = {x = tempChar.x + xOffset, y = tempChar.y + yOffset}, animToPlay = "walkRight"},an,{actualFrame = tempClock})
-    playerEntity.draw(0, 0)
-    -- tempChar.drawCollision(xOffset, yOffset)
-    love.graphics.draw(a[3],0,0,0,1,1,1,1,0,0)
-    love.graphics.draw(a[4],0,0,0,1,1,1,1,0,0)
+    love.graphics.draw(a[1],0,0,0,1,1,1,1,0,0) -- UL
+    love.graphics.draw(a[2],0,0,0,1,1,1,1,0,0) -- BL
 
+    -- COLLISION COISAS
     for i=1, #b do
         if b[i].active then
             love.graphics.setColor(0,255,0,0.25)
@@ -198,15 +186,22 @@ function mapModeDraw(workingMapTable)
     love.graphics.setColor(255,255,255,1)
 
     love.graphics.setColor(0,0,255,1)
-    drawEvents(d, 0, 0)
+    drawEvents(d)
     love.graphics.setColor(255,255,255,1)
+    -- FIM DO COLLISION COISAS
+
+    playerEntity.draw() -- player char
+
+    love.graphics.draw(a[3],0,0,0,1,1,1,1,0,0) -- FL
+    love.graphics.draw(a[4],0,0,0,1,1,1,1,0,0) -- OL
+
+    love.graphics.setCanvas()
+    love.graphics.draw(workingCanvas,xOffset,yOffset,0,1,1,1,0,0)
 
     if workingFader.isActive then
         workingFader:draw()
     end
 
-    love.graphics.setCanvas()
-    love.graphics.draw(workingCanvas,xOffset,yOffset,0,1,1,1,0,0)
     drawInput(150,5)
 end
 

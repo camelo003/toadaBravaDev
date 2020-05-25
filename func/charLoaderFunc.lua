@@ -16,6 +16,10 @@ de um personagem retorna uma tabela com os campos:
 
 -  lista de 'labels' possíveis (a ser incrementado):
 
+    - idleRight
+    - idleDown
+    - idleLeft
+    - idleUp
     - walkRight
     - walkDown
     - walkLeft
@@ -91,20 +95,20 @@ charLoader = function(tiledChar)
     return anim
 end
 
-charPlayer = function(dummy,animTable,clock)
-    local i = (math.floor(clock.actualFrame) % #animTable.anims[dummy.animToPlay].order) + 1
-    local x = (animTable.anims[dummy.animToPlay].order[i] - 1) * animTable.frameW
-    local y = (animTable.anims[dummy.animToPlay].row - 1) * animTable.frameH
-    local quad = love.graphics.newQuad(x,y,animTable.frameW,animTable.frameH,animTable.spriteSheet:getDimensions())
+charPlayer = function(dummy,clock)
+    local i = (math.floor(clock.actualFrame) % #dummy.activeChar.anims[dummy.animToPlay].order) + 1
+    local x = (dummy.activeChar.anims[dummy.animToPlay].order[i] - 1) * dummy.activeChar.frameW
+    local y = (dummy.activeChar.anims[dummy.animToPlay].row - 1) * dummy.activeChar.frameH
+    local quad = love.graphics.newQuad(x,y,dummy.activeChar.frameW,dummy.activeChar.frameH,dummy.activeChar.spriteSheet:getDimensions())
     
-    local rect = animTable.collisionRects[animTable.anims[dummy.animToPlay].row] -- get collision rect for this particular anim.
-    while rect.y > animTable.frameH do -- "normalize" height of the collision until the very first row (to use relactive values)
-        rect.y = rect.y - animTable.frameH
+    local rect = dummy.activeChar.collisionRects[dummy.activeChar.anims[dummy.animToPlay].row] -- get collision rect for this particular anim.
+    while rect.y > dummy.activeChar.frameH do -- "normalize" height of the collision until the very first row (to use relactive values)
+        rect.y = rect.y - dummy.activeChar.frameH
     end
     local collisionOffsetX = dummy.pos.x - rect.x - (rect.width / 2)
     local collisionOffsetY = dummy.pos.y - rect.y - (rect.height / 2)
 
     -- [to-do] inserir tratamento que, caso a anim. nao exista, printar o rotulo no lugar
     
-    love.graphics.draw(animTable.spriteSheet, quad, collisionOffsetX, collisionOffsetY)
+    love.graphics.draw(dummy.activeChar.spriteSheet, quad, collisionOffsetX, collisionOffsetY)
 end
